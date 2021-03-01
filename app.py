@@ -7,7 +7,7 @@ import datetime
 
 def main():
     # df, eval = load_datasets()
-    df = load_datasets()
+    emails_df, users_df = load_datasets()
     st.sidebar.header('Elija el monitor')
     page = st.sidebar.selectbox("Choose a page", ["Homepage", "Users", "Uso de la API", "Longitud de los mails"])
 
@@ -25,7 +25,13 @@ def main():
         st.title("Users de la API")
         # show_eval()
         st.sidebar.header('Elija el user')
-        user = st.sidebar.selectbox("Choose user", df['user'].unique())
+        user = st.sidebar.selectbox("Choose user", emails_df['user'].unique())
+        st.markdown("### Evolucion de la creacion de usuarios por mes")
+        st.bar_chart(users_df['month'].value_counts())
+        st.markdown("### Informacion del usuario")
+        st.write("**Usuario:**", user)
+        fecha_creacion = users_df.loc[users_df['username'] == user['date_joined']
+        st.write("**Mes de creacion:**", str(date_joined))
 
     elif page == "Uso de la API":
         st.title("Evolucion mensual de los mails consultados")
@@ -36,7 +42,7 @@ def main():
         end_date = st.date_input('End date', today)
         if st.button('Mostrar'):
             # filtro el dataset
-            dfperiod = df.loc[(df['date'] >= np.datetime64(start_date)) & (df['date'] <= np.datetime64(end_date))]
+            dfperiod = emails_df.loc[(emails_df['date'] >= np.datetime64(start_date)) & (emails_df['date'] <= np.datetime64(end_date))]
             dfcons = dfperiod['datetime'].value_counts()
             # st.write(dfperiod.head())
             st.markdown("En el siguiente grafico se puede observar la evolucion mensual de consultas")
@@ -45,7 +51,7 @@ def main():
     elif page == "Longitud de los mails":
         st.title("Longitud de los mails consultados")
         st.markdown("En el siguiente grafico se muestra un histograma de la longitud de los mails consultados")
-        st.bar_chart(df['lenght'].value_counts())
+        st.bar_chart(emails_df['lenght'].value_counts())
 
 
 
@@ -57,7 +63,7 @@ def load_datasets():
     import pandas as pd
 
     HOST = 'http://18.189.252.248/'
-    USERNAME = 'rankeros'
+    USERNAME = 'DashboardUser'
     PASSWORD = 'rankeros123'
 
     #### USERNAME
@@ -69,23 +75,21 @@ def load_datasets():
     #### DASHBOARDS
 
     # emails
-    res = requests.get(HOST+'emails_dashboard/',headers=headers)
-
-    emails = pd.read_json(res.content)
-
+    resemails = requests.get(HOST+'emails_dashboard/',headers=headers)
+    emails = pd.read_json(resemails.content)
     # time vars
     emails['date'] = pd.to_datetime(emails['created'].str.slice(start=0, stop=10), format='%Y-%m-%d')
     emails['datetime'] = [x.to_pydatetime() for x in emails['date']]
     emails['hour'] = emails['created'].str.slice(start=11, stop=13)
     emails['lenght'] = emails['text'].str.len()
-    # df['periodo'] =  pd.to_datetime(df['fecha'], format='%d/%m/%Y')
-    # eval = df[['periodo', 'mail']].groupby(['periodo']).agg(['count'])
-    # eval.columns = ['cantidad']
-    # return df, eval
-    return emails
 
-def show_eval():
-    st.line_chart(eval['cantidad'])
+    # users
+    resusers = requests.get(HOST+'users_dashboard/',headers=headers)
+    users = pd.read_json(resusers.content)
+    # time vars
+    users['month'] = users['date_joined'].str.slice(start=0, stop=7)
+
+    return emails, users
 
 if __name__ == "__main__":
     main()
