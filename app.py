@@ -17,21 +17,15 @@ def main():
     	st.markdown("En este dashboard se pueden monitorear varios aspectos del uso de la API")
     	st.markdown("En el menu de la izquierda puede seleccionar los monitores disponibles")
     	st.markdown("### **Detalle de los monitores**")
-    	st.markdown("* 🧑 **Users:** muestra informacion del usuario")
+    	st.markdown("* 🧑 **Users:** muestra informacion de los usuarios")
     	st.markdown("* 📈 **Uso de la API:** muestra la evolucion en el uso de la API")
     	st.markdown("* ✉️ **Longitud de los mails:** muestra el detalle de la longitud de los mails")
 
     elif page == "Users":
         st.title("Users de la API")
         # show_eval()
-        st.sidebar.header('Elija el user')
-        user = st.sidebar.selectbox("Choose user", emails_df['user'].unique())
         st.markdown("### Evolucion de la creacion de usuarios por mes")
         st.bar_chart(users_df['month'].value_counts())
-        st.markdown("### Informacion del usuario")
-        st.write("**Usuario:**", user)
-        fecha_creacion = users_df.loc[users_df['username'] == user['date_joined']
-        st.write("**Mes de creacion:**", str(date_joined))
 
     elif page == "Uso de la API":
         st.title("Evolucion mensual de los mails consultados")
@@ -68,7 +62,7 @@ def load_datasets():
 
     #### USERNAME
     data_login = {'username': USERNAME, 'password':PASSWORD}
-    response = requests.post(HOST+'api-token-auth',data_login)
+    response = requests.post(HOST+'api-token-auth/',data_login)
     token = json.loads(response.content.decode('utf-8'))['token']
     headers = { 'Authorization': f'Token {token}' }
 
